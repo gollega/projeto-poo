@@ -7,7 +7,7 @@ if __name__ == "__main__":
     sala1 = Sala(1, 50)
     sala1.adicionarAssento(assento1)
 
-    sessao1 = Sessão(filme1, sala1, "19:30", 30.00)
+    sessao1 = Sessao(filme1, sala1, "19:30", 30.00)
 
     print("=== INFORMAÇÕES DO FILME ===")
     print(filme1.exibir_info())
