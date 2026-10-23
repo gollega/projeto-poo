@@ -29,3 +29,21 @@ if __name__ == "__main__":
     ingresso_meia = IngressoMeia(filme1, sessao1, assento1, "Carteira de Estudante nº 12345")
     ingresso_meia.exibir_info()
 
+    snackbar = SnackBar()
+
+    snackbar.adicionar_produto("Pipoca", 20.00)
+    snackbar.adicionar_produto("Refrigerante", 10.00)
+    snackbar.adicionar_produto("Chocolate", 8.00)
+
+    print("=== CARDÁPIO ===")
+    for produto, preco in snackbar.exibir_cardapio():
+        print(f"{produto}: R$ {preco:.2f}")
+
+    pedido = Pedido()
+
+    pedido.adicionar_item("Pipoca", 20.00)
+    pedido.adicionar_item("Refrigerante", 10.00)
+
+    print("\n=== MEU PEDIDO ===")
+    print(pedido.exibir_pedido())
+

@@ -107,4 +107,30 @@ class IngressoMeia(Ingresso):
         super().exibir_info()
         print(f"Tipo: Meia-Entrada (Comprovante: {self.comprovante})\n")
 
+class SnackBar:
+    def __init__(self):
+        self.__cardapio = []
+
+    def adicionar_produto(self, produto: str, preco: float):
+        self.__cardapio.append((produto, preco))
+
+    def exibir_cardapio(self):
+        return self.__cardapio
+
+
+class Pedido:
+    def __init__(self):
+        self.__itens = []
+        self.__valor_total = 0.0
+
+    def adicionar_item(self, produto: str, preco: float):
+        self.__itens.append((produto, preco))
+        self.__valor_total += preco
+
+    def exibir_pedido(self):
+        return (
+            f"Itens: {self.__itens}\n"
+            f"Valor total: R$ {self.__valor_total:.2f}"
+        )
+
 
