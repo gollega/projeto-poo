@@ -28,3 +28,48 @@ class Assento():
 
     def identificarAssento(self):
         return f"Seu assento é o {self.__fileira}{self.__numero}"
+
+class Sala():
+    __numero: int
+    __capacidade: int
+    __assentos: list[Assento]
+
+    def __init__(self, numero: int, capacidade: int):
+        self.__numero = numero
+        self.__capacidade = capacidade
+        self.__assentos = []
+
+    def adicionarAssento(self, assento: Assento):
+        if len(self.__assentos) < self.__capacidade:
+            self.__assentos.append(assento)
+            return "Assento adicionado com sucesso!"
+        return "A sala atingiu sua capacidade máxima."
+
+    def exibir_info(self):
+        return (
+            f"Número da sala: {self.__numero}\n"
+            f"Capacidade: {self.__capacidade} pessoas\n"
+            f"Quantidade de assentos cadastrados: {len(self.__assentos)}"
+        )
+
+
+class Sessao():
+    __filme: Filme
+    __sala: Sala
+    __horario: str
+    __preco: float
+
+    def __init__(self, filme: Filme, sala: Sala, horario: str, preco: float):
+        self.__filme = filme
+        self.__sala = sala
+        self.__horario = horario
+        self.__preco = preco
+
+    def exibir_info(self):
+        return (
+            f"=== INFORMAÇÕES DA SESSÃO ===\n"
+            f"{self.__filme.exibir_info()}\n"
+            f"{self.__sala.exibir_info()}\n"
+            f"Horário da sessão: {self.__horario}\n"
+            f"Preço do ingresso: R$ {self.__preco:.2f}"
+        )
