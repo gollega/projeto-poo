@@ -7,7 +7,10 @@ if __name__ == "__main__":
     sala1 = Sala(1, 50)
     sala1.adicionarAssento(assento1)
 
-    sessao1 = Sessão(filme1, sala1, "19:30", 30.00)
+    sessao1 = Sessao(filme1, sala1, "19:30", 30.00)
+
+
+    print("=== TESTES DAS CLASSES ===\n")
 
     print("=== INFORMAÇÕES DO FILME ===")
     print(filme1.exibir_info())
@@ -20,3 +23,12 @@ if __name__ == "__main__":
 
     print("\n=== INFORMAÇÕES DA SESSÃO ===")
     print(sessao1.exibir_info())
+
+    print("\n=== INGRESSO INTEIRO ===")
+    ingresso_inteiro = Ingresso(filme1, sessao1, assento1, sessao1.get_preco())
+    ingresso_inteiro.exibir_info()
+
+    print("\n=== INGRESSO MEIA-ENTRADA ===")
+    ingresso_meia = IngressoMeia(filme1, sessao1, assento1, "Carteira de Estudante nº 12345")
+    ingresso_meia.exibir_info()
+

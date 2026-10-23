@@ -67,9 +67,44 @@ class Sessao():
 
     def exibir_info(self):
         return (
-            f"=== INFORMAÇÕES DA SESSÃO ===\n"
             f"{self.__filme.exibir_info()}\n"
             f"{self.__sala.exibir_info()}\n"
             f"Horário da sessão: {self.__horario}\n"
             f"Preço do ingresso: R$ {self.__preco:.2f}"
         )
+
+    def get_horario(self):
+        return self.__horario
+
+    def get_preco(self):
+        return self.__preco
+
+class Ingresso:
+    def __init__(self, filme: Filme, sessao: Sessao, assento: Assento, preco: float | None = None):
+        self.filme = filme
+        self.sessao = sessao
+        self.assento = assento
+        self.preco = sessao.get_preco() if preco is None else preco
+
+    def calcular_preco(self):
+        return self.preco
+
+    def exibir_info(self):
+        print(self.filme.exibir_info())
+        print(f"Horário da Sessão: {self.sessao.get_horario()}")
+        print(self.assento.identificarAssento())
+        print(f"Valor: R$ {self.calcular_preco():.2f}")
+
+class IngressoMeia(Ingresso):
+    def __init__(self, filme: Filme, sessao: Sessao, assento: Assento, comprovante: str, preco: float | None = None):
+        super().__init__(filme, sessao, assento, preco)
+        self.comprovante = comprovante
+
+    def calcular_preco(self):
+        return self.sessao.get_preco() / 2
+
+    def exibir_info(self):
+        super().exibir_info()
+        print(f"Tipo: Meia-Entrada (Comprovante: {self.comprovante})\n")
+
+
