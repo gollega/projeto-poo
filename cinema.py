@@ -23,11 +23,18 @@ class Assento():
     __numero: int
 
     def __init__(self, fileira: str, numero: int):
+        if not fileira:
+            raise Exception("A fileira do assento não pode estar vazia.")
+
+        if numero < 1:
+            raise Exception("O número do assento deve ser maior que zero.")
+
         self.__fileira = fileira
         self.__numero = numero
 
     def identificarAssento(self):
         return f"Seu assento é o {self.__fileira}{self.__numero}"
+
 
 class Sala():
     __numero: int
@@ -40,10 +47,11 @@ class Sala():
         self.__assentos = []
 
     def adicionarAssento(self, assento: Assento):
-        if len(self.__assentos) < self.__capacidade:
-            self.__assentos.append(assento)
-            return "Assento adicionado com sucesso!"
-        return "A sala atingiu sua capacidade máxima."
+        if len(self.__assentos) >= self.__capacidade:
+            raise Exception("A sala atingiu sua capacidade máxima.")
+
+        self.__assentos.append(assento)
+        return "Assento adicionado com sucesso!"
 
     def exibir_info(self):
         return (
@@ -51,7 +59,7 @@ class Sala():
             f"Capacidade: {self.__capacidade} pessoas\n"
             f"Quantidade de assentos cadastrados: {len(self.__assentos)}"
         )
-
+   
 
 class Sessao():
     __filme: Filme
