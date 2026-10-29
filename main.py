@@ -2,10 +2,19 @@ from cinema import *
 
 if __name__ == "__main__":
     filme1 = Filme("Interestelar", 169, "Ficção científica", 10)
+    try:
     assento1 = Assento("A", 12)
+    print(assento1.identificarAssento())
 
     sala1 = Sala(1, 50)
-    sala1.adicionarAssento(assento1)
+
+    try:
+        print(sala1.adicionarAssento(assento1))
+    except Exception as erro:
+        print(f"Erro ao adicionar assento: {erro}")
+
+except Exception as erro:
+    print(f"Erro ao criar assento: {erro}")
 
     sessao1 = Sessao(filme1, sala1, "19:30", 30.00)
 
