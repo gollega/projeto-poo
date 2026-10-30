@@ -115,30 +115,63 @@ class IngressoMeia(Ingresso):
         super().exibir_info()
         print(f"Tipo: Meia-Entrada (Comprovante: {self.comprovante})\n")
 
+class Produto:
+    def __init__(self, nome: str, preco: float):
+        self.nome = nome
+        self.preco = preco
+ 
+ 
 class SnackBar:
     def __init__(self):
-        self.__cardapio = []
-
-    def adicionar_produto(self, produto: str, preco: float):
-        self.__cardapio.append((produto, preco))
-
+        self.__cardapio = {}  # {nome: Produto}
+ 
+    def adicionar_produto(self, produto: Produto):
+        self.__cardapio[produto.nome] = produto
+ 
+    def buscar_produto(self, nome: str):
+        if nome not in self.__cardapio:
+            raise Exception(f"'{nome}' não existe no cardápio.")
+        return self.__cardapio[nome]
+ 
+    def remover_produto(self, nome: str):
+        if nome in self.__cardapio:
+            del self.__cardapio[nome]
+        else:
+            raise Exception(f"'{nome}'não existe no cárdapio.")
+ 
     def exibir_cardapio(self):
         return self.__cardapio
-
-
+ 
+ 
 class Pedido:
-    def __init__(self):
-        self.__itens = []
+    def __init__(self, snackbar: SnackBar):
+        self.__snackbar = snackbar  # ligação com o cardápio
+        self.__itens = {}  # {nome: quantidade}
         self.__valor_total = 0.0
+ 
+    def adicionar_item(self, nome: str, quantidade: int = 1):
+        produto = self.__snackbar.buscar_produto(nome)
+        if quantidade <= 0:
+            raise Exception("A quantidade deve ser maior que zero.")
 
-    def adicionar_item(self, produto: str, preco: float):
-        self.__itens.append((produto, preco))
-        self.__valor_total += preco
-
+        if nome in self.__itens: # inicia vazio
+            self.__itens[nome] += quantidade # caso nao seja o primeiro pedido adicionar o restante
+        else:
+            self.__itens[nome] = quantidade # caso seja o primeiro pedido, adiciona a quantidade inicial
+        self.__valor_total += produto.preco * quantidade
+ 
+    def remover_item(self, nome: str):
+        if nome not in self.__itens:
+            raise Exception(f"'{nome}' não está no pedido.")
+        produto = self.__snackbar.buscar_produto(nome)
+        self.__valor_total -= produto.preco * self.__itens[nome]
+        del self.__itens[nome]
+ 
     def exibir_pedido(self):
         return (
             f"Itens: {self.__itens}\n"
             f"Valor total: R$ {self.__valor_total:.2f}"
         )
+
 
 
