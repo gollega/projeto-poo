@@ -123,7 +123,7 @@ class Produto:
  
 class SnackBar:
     def __init__(self):
-        self.__cardapio = {}  # {nome: Produto}
+        self.__cardapio: dict[str, Produto] = {} # {nome: Produto}
  
     def adicionar_produto(self, produto: Produto):
         self.__cardapio[produto.nome] = produto
