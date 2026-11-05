@@ -23,11 +23,11 @@ class Assento():
     __numero: int
 
     def __init__(self, fileira: str, numero: int):
-        if not fileira:
-            raise Exception("A fileira do assento não pode estar vazia.")
+        if fileira not in ["A", "B", "C", "D", "E"]:
+            raise ValueError("Fileira inválida! Escolha entre A-E.")
 
-        if numero < 1:
-            raise Exception("O número do assento deve ser maior que zero.")
+        if not isinstance(numero, int) or not 1 <= numero <= 10:
+            raise ValueError("Número inválido! Escolha entre 1-10.")
 
         self.__fileira = fileira
         self.__numero = numero
@@ -59,26 +59,39 @@ class Sala():
             f"Capacidade: {self.__capacidade} pessoas\n"
             f"Quantidade de assentos cadastrados: {len(self.__assentos)}"
         )
-   
 
 class Sessao():
     __filme: Filme
     __sala: Sala
     __horario: str
     __preco: float
+    __assentos_vendidos: list[Assento]
 
     def __init__(self, filme: Filme, sala: Sala, horario: str, preco: float):
         self.__filme = filme
         self.__sala = sala
         self.__horario = horario
         self.__preco = preco
+        self.__assentos_vendidos = []
+
+    def vender_assento(self, assento: Assento):
+        for vendido in self.__assentos_vendidos:
+            if (
+                vendido.identificarAssento()
+                == assento.identificarAssento()
+            ):
+                raise ValueError("Este assento já foi vendido!")
+
+        self.__assentos_vendidos.append(assento)
+        return "Assento vendido com sucesso!"
 
     def exibir_info(self):
         return (
             f"{self.__filme.exibir_info()}\n"
             f"{self.__sala.exibir_info()}\n"
             f"Horário da sessão: {self.__horario}\n"
-            f"Preço do ingresso: R$ {self.__preco:.2f}"
+            f"Preço do ingresso: R$ {self.__preco:.2f}\n"
+            f"Assentos vendidos: {len(self.__assentos_vendidos)}"
         )
 
     def get_horario(self):
@@ -89,6 +102,8 @@ class Sessao():
 
 class Ingresso:
     def __init__(self, filme: Filme, sessao: Sessao, assento: Assento, preco: float | None = None):
+        sessao.vender_assento(assento)
+
         self.filme = filme
         self.sessao = sessao
         self.assento = assento
@@ -172,6 +187,3 @@ class Pedido:
             f"Itens: {self.__itens}\n"
             f"Valor total: R$ {self.__valor_total:.2f}"
         )
-
-
-
