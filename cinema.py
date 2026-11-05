@@ -131,59 +131,130 @@ class IngressoMeia(Ingresso):
         print(f"Tipo: Meia-Entrada (Comprovante: {self.comprovante})\n")
 
 class Produto:
-    def __init__(self, nome: str, preco: float):
+    def __init__(self, id: int, nome: str, preco: float, estoque: int):
+        self.estoque = estoque
+        self.id = id
         self.nome = nome
         self.preco = preco
- 
- 
+
+
 class SnackBar:
     def __init__(self):
-        self.__cardapio: dict[str, Produto] = {} # {nome: Produto}
- 
+        self.__cardapio: dict[int, Produto] = {} # {id: Produto}
+
     def adicionar_produto(self, produto: Produto):
-        self.__cardapio[produto.nome] = produto
- 
-    def buscar_produto(self, nome: str):
-        if nome not in self.__cardapio:
-            raise Exception(f"'{nome}' não existe no cardápio.")
-        return self.__cardapio[nome]
- 
-    def remover_produto(self, nome: str):
-        if nome in self.__cardapio:
-            del self.__cardapio[nome]
+        self.__cardapio[produto.id] = produto
+
+    def buscar_produto(self, id: int):
+        if id not in self.__cardapio:
+            raise Exception(f"O ID '{id}' não existe no cardápio.")
+        return self.__cardapio[id]
+
+    def remover_produto(self, id: int):
+        if id in self.__cardapio:
+            del self.__cardapio[id]
         else:
-            raise Exception(f"'{nome}'não existe no cárdapio.")
- 
+            raise Exception(f"O ID '{id}' não existe no cardápio.")
+
     def exibir_cardapio(self):
-        return self.__cardapio
- 
- 
+        if not self.__cardapio:
+            return "O cardápio está vazio."
+            
+        menu = "=== CARDÁPIO ===\n"
+        for produto in self.__cardapio.values():
+            if produto.estoque > 0:
+                menu += f"[{produto.id}] {produto.nome} - R$ {produto.preco:.2f} (Estoque: {produto.estoque})\n"
+            else:
+                menu += f"[{produto.id}] {produto.nome} - R$ {produto.preco:.2f} *** ESGOTADO ***\n"
+                
+        return menu
+
+
 class Pedido:
     def __init__(self, snackbar: SnackBar):
         self.__snackbar = snackbar  # ligação com o cardápio
-        self.__itens = {}  # {nome: quantidade}
+        self.__itens = {}  # {Produto: quantidade} 
         self.__valor_total = 0.0
- 
-    def adicionar_item(self, nome: str, quantidade: int = 1):
-        produto = self.__snackbar.buscar_produto(nome)
+
+    def adicionar_item(self, id: int, quantidade: int = 1):
         if quantidade <= 0:
             raise Exception("A quantidade deve ser maior que zero.")
 
-        if nome in self.__itens: # inicia vazio
-            self.__itens[nome] += quantidade # caso nao seja o primeiro pedido adicionar o restante
+        produto = self.__snackbar.buscar_produto(id)
+        
+        if produto.estoque <= 0:
+            raise Exception(f"O produto '{produto.nome}' está totalmente esgotado.")
+
+        # Tratamento de erro: se pedir mais do que tem, adiciona o limite e avisa
+        if quantidade > produto.estoque:
+            print(f"AVISO: Só temos {produto.estoque} unidade(s) de '{produto.nome}' disponível(is). Adicionando o limite ao pedido.")
+            quantidade_adicionada = produto.estoque
         else:
-            self.__itens[nome] = quantidade # caso seja o primeiro pedido, adiciona a quantidade inicial
-        self.__valor_total += produto.preco * quantidade
- 
-    def remover_item(self, nome: str):
-        if nome not in self.__itens:
-            raise Exception(f"'{nome}' não está no pedido.")
-        produto = self.__snackbar.buscar_produto(nome)
-        self.__valor_total -= produto.preco * self.__itens[nome]
-        del self.__itens[nome]
- 
+            quantidade_adicionada = quantidade
+
+        # 1. Baixa o estoque NA HORA para o cardápio atualizar na mesma hora
+        produto.estoque -= quantidade_adicionada
+
+        # 2. Adiciona ao carrinho temporário
+        if produto in self.__itens:
+            self.__itens[produto] += quantidade_adicionada
+        else:
+            self.__itens[produto] = quantidade_adicionada
+            
+        self.__valor_total += produto.preco * quantidade_adicionada
+
+    def remover_item(self, id: int, quantidade: int = 1):
+        if quantidade <= 0:
+            raise Exception("A quantidade a ser removida deve ser maior que zero.")
+
+        produto_remover = None
+        for produto in self.__itens.keys():
+            if produto.id == id:
+                produto_remover = produto
+                break
+                
+        if not produto_remover:
+            raise Exception(f"O ID '{id}' não está no pedido.")
+            
+        quantidade_atual = self.__itens[produto_remover]
+        
+        # Se pedir para remover tudo ou mais do que tem, cancela o item todo do carrinho
+        if quantidade >= quantidade_atual:
+            quantidade_a_remover = quantidade_atual
+            del self.__itens[produto_remover]
+        else:
+            # Subtrai apenas a quantidade desejada
+            quantidade_a_remover = quantidade
+            self.__itens[produto_remover] -= quantidade_a_remover
+            
+        self.__valor_total -= produto_remover.preco * quantidade_a_remover
+        
+        # 3. Devolve a quantidade removida para o estoque real do cardápio
+        produto_remover.estoque += quantidade_a_remover
+
     def exibir_pedido(self):
-        return (
-            f"Itens: {self.__itens}\n"
-            f"Valor total: R$ {self.__valor_total:.2f}"
-        )
+        if not self.__itens:
+            return "O pedido está vazio."
+            
+        recibo = "\n=== RESUMO DO PEDIDO ===\n"
+        for produto, quantidade in self.__itens.items():
+            subtotal = produto.preco * quantidade
+            recibo += f"{quantidade}x {produto.nome} ....... R$ {subtotal:.2f}\n"
+            
+        recibo += "------------------------\n"
+        recibo += f"Valor total: R$ {self.__valor_total:.2f}"
+        
+        return recibo
+        
+    def finalizar_pedido(self):
+        if not self.__itens:
+            raise Exception("O pedido está vazio. Não há o que finalizar.")
+            
+        # Salva o recibo antes de esvaziar o carrinho
+        recibo = self.exibir_pedido()
+        
+        # Limpa o carrinho (preparando para o próximo cliente)
+        self.__itens.clear()
+        self.__valor_total = 0.0
+        
+        return f"\nPedido finalizado com sucesso!\n{recibo}"

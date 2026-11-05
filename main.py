@@ -71,9 +71,10 @@ if __name__ == "__main__":
 
     bar = SnackBar()
 
-    bar.adicionar_produto(Produto("X-Burguer", 15.0))
-    bar.adicionar_produto(Produto("Refrigerante", 6.5))
-    bar.adicionar_produto(Produto("Batata Frita", 12.0))
+    bar.adicionar_produto(Produto(1, "X-Burguer", 15.0, 10))
+    bar.adicionar_produto(Produto(2, "Refrigerante", 6.5, 20))
+    bar.adicionar_produto(Produto(3, "Batata Frita", 12.0, 15))
+    bar.adicionar_produto(Produto(4, "Pipoca", 8.0, 25))
 
     pedido = Pedido(bar)
 
@@ -86,6 +87,7 @@ if __name__ == "__main__":
         print("2 - Adicionar item ao pedido")
         print("3 - Remover item do pedido")
         print("4 - Ver pedido")
+        print("5 - Finalizar pedido")
         print("0 - Sair")
 
         opcao = input("Escolha: ")
@@ -95,29 +97,31 @@ if __name__ == "__main__":
             match opcao:
 
                 case "1":
-                    print("\n=== CARDÁPIO ===")
-
-                    for produto in bar.exibir_cardapio().values():
-                        print(f"{produto.nome} - R$ {produto.preco:.2f}")
+                    print(bar.exibir_cardapio())
 
                 case "2":
-                    nome = input("Nome do produto: ")
+                    id = int(input("ID do produto: "))
                     quantidade = int(input("Quantidade: "))
 
-                    pedido.adicionar_item(nome, quantidade)
+                    pedido.adicionar_item(id, quantidade)
 
                     print("Item adicionado com sucesso!")
 
                 case "3":
-                    nome = input("Nome do produto: ")
+                    id = int(input("ID do produto: "))
+                    quantidade = int(input("Quantidade para remover: "))
 
-                    pedido.remover_item(nome)
+                    pedido.remover_item(id, quantidade)
 
-                    print("Item removido com sucesso!")
+                    print("Item(s) removido(s) com sucesso!")
 
                 case "4":
                     print("\n=== SEU PEDIDO ===")
                     print(pedido.exibir_pedido())
+
+                case "5":
+                    print("\n=== FINALIZANDO PEDIDO ===")
+                    print(pedido.finalizar_pedido())
 
                 case "0":
                     print("Encerrando o sistema...")
