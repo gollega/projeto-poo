@@ -1,85 +1,80 @@
 
 from cinema import *
 
-if __name__ == "__main__":
 
-    # FILME
-    filme1 = Filme("Interestelar", 169, "Ficção científica", 10)
+def painel_bilheteria(filme, sala, sessao):
+    while True:
 
-    # SALA
-    sala1 = Sala(1, 50)
+        print("\n=== BILHETERIA ===")
+        print("1 - Ver informações do filme")
+        print("2 - Ver informações da sala")
+        print("3 - Ver informações da sessão")
+        print("4 - Comprar ingresso")
+        print("5 - Comprar meia-entrada")
+        print("0 - Voltar")
 
-    # SESSÃO
-    sessao1 = Sessao(filme1, sala1, "19:30", 30.00)
+        opcao = input("Escolha: ")
 
-    print("=== INFORMAÇÕES DO FILME ===")
-    print(filme1.exibir_info())
+        match opcao:
 
-    print("\n=== INFORMAÇÕES DA SALA ===")
-    print(sala1.exibir_info())
+            case "1":
+                print("\n=== INFORMAÇÕES DO FILME ===")
+                print(filme.exibir_info())
 
-    print("\n=== INFORMAÇÕES DA SESSÃO ===")
-    print(sessao1.exibir_info())
+            case "2":
+                print("\n=== INFORMAÇÕES DA SALA ===")
+                print(sala.exibir_info())
 
-    # COMPRA DE INGRESSOS
+            case "3":
+                print("\n=== INFORMAÇÕES DA SESSÃO ===")
+                print(sessao.exibir_info())
 
-    print("\n=== COMPRA DE INGRESSOS ===")
+            case "4":
+                print("\n=== COMPRA DE INGRESSOS ===")
 
-    try:
-        assento1 = Assento("A", 10)
-        ingresso1 = Ingresso(filme1, sessao1, assento1)
+                try:
+                    fileira = input("Fileira (A-E): ")
+                    numero = int(input("Número do assento (1-10): "))
 
-        print("\nIngresso comprado com sucesso!")
-        ingresso1.exibir_info()
+                    assento = Assento(fileira, numero)
+                    ingresso = Ingresso(filme, sessao, assento)
 
-    except Exception as erro:
-        print(f"Erro na compra: {erro}")
+                    print("\nIngresso comprado com sucesso!")
+                    ingresso.exibir_info()
 
-    # TESTE DE ASSENTO DUPLICADO
+                except Exception as erro:
+                    print(f"Erro na compra: {erro}")
 
-    print("\n=== TESTE DE ASSENTO DUPLICADO ===")
+            case "5":
+                print("\n=== COMPRA DE MEIA-ENTRADA ===")
 
-    try:
-        assento2 = Assento("A", 10)
-        ingresso2 = Ingresso(filme1, sessao1, assento2)
+                try:
+                    fileira = input("Fileira (A-E): ")
+                    numero = int(input("Número do assento (1-10): "))
 
-        print("Ingresso comprado com sucesso!")
+                    assento = Assento(fileira, numero)
+                    ingresso = IngressoMeia(
+                        filme,
+                        sessao,
+                        assento,
+                        "Carteirinha de estudante"
+                    )
 
-    except Exception as erro:
-        print(f"Erro na compra: {erro}")
+                    print("\nIngresso comprado com sucesso!")
+                    ingresso.exibir_info()
 
-    # TESTE DE MEIA-ENTRADA
+                except Exception as erro:
+                    print(f"Erro na compra: {erro}")
 
-    print("\n=== COMPRA DE MEIA-ENTRADA ===")
+            case "0":
+                print("Voltando ao painel principal...")
+                break
 
-    try:
-        assento3 = Assento("B", 5)
-        ingresso3 = IngressoMeia(
-            filme1,
-            sessao1,
-            assento3,
-            "Carteirinha de estudante"
-        )
+            case _:
+                print("Opção inválida!")
 
-        print("\nIngresso comprado com sucesso!")
-        ingresso3.exibir_info()
 
-    except Exception as erro:
-        print(f"Erro na compra: {erro}")
-
-    # SNACK BAR
-
-    bar = SnackBar()
-
-    bar.adicionar_produto(Produto(1, "X-Burguer", 15.0, 10))
-    bar.adicionar_produto(Produto(2, "Refrigerante", 6.5, 20))
-    bar.adicionar_produto(Produto(3, "Batata Frita", 12.0, 15))
-    bar.adicionar_produto(Produto(4, "Pipoca", 8.0, 25))
-
-    pedido = Pedido(bar)
-
-    # MENU SNACK BAR
-
+def painel_snackbar(bar, pedido):
     while True:
 
         print("\n=== SNACK BAR ===")
@@ -124,7 +119,7 @@ if __name__ == "__main__":
                     print(pedido.finalizar_pedido())
 
                 case "0":
-                    print("Encerrando o sistema...")
+                    print("Voltando ao painel principal...")
                     break
 
                 case _:
@@ -135,3 +130,44 @@ if __name__ == "__main__":
 
         except Exception as erro:
             print(f"Erro: {erro}")
+
+
+# FILME, SALA E SESSÃO
+filme1 = Filme("Interestelar", 169, "Ficção científica", 10)
+sala1 = Sala(1, 50)
+sessao1 = Sessao(filme1, sala1, "19:30", 30.00)
+
+# SNACK BAR
+bar = SnackBar()
+
+bar.adicionar_produto(Produto(1, "X-Burguer", 15.0, 10))
+bar.adicionar_produto(Produto(2, "Refrigerante", 6.5, 20))
+bar.adicionar_produto(Produto(3, "Batata Frita", 12.0, 15))
+bar.adicionar_produto(Produto(4, "Pipoca", 8.0, 25))
+
+pedido = Pedido(bar)
+
+# PAINEL PRINCIPAL
+while True:
+
+    print("\n=== CINEMA - PAINEL DE ATENDIMENTO ===")
+    print("1 - Bilheteria")
+    print("2 - Snack Bar")
+    print("0 - Encerrar")
+
+    opcao = input("Escolha: ")
+
+    match opcao:
+
+        case "1":
+            painel_bilheteria(filme1, sala1, sessao1)
+
+        case "2":
+            painel_snackbar(bar, pedido)
+
+        case "0":
+            print("Encerrando o sistema...")
+            break
+
+        case _:
+            print("Opção inválida!")
