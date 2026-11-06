@@ -2,15 +2,23 @@
 from cinema import *
 
 
-def painel_bilheteria(filme, sala, sessao):
+def escolher_sessao(programacao):
+    print(programacao.exibir_programacao())
+
+    numero_sala = int(input("\nNúmero da sala: "))
+    numero_sessao = int(input("Número da sessão: "))
+
+    return programacao.buscar_sessao(numero_sala, numero_sessao)
+
+
+def painel_bilheteria(programacao):
     while True:
 
         print("\n=== BILHETERIA ===")
-        print("1 - Ver informações do filme")
-        print("2 - Ver informações da sala")
-        print("3 - Ver informações da sessão")
-        print("4 - Comprar ingresso")
-        print("5 - Comprar meia-entrada")
+        print("1 - Ver programação")
+        print("2 - Ver informações da sessão")
+        print("3 - Comprar ingresso")
+        print("4 - Comprar meia-entrada")
         print("0 - Voltar")
 
         opcao = input("Escolha: ")
@@ -18,26 +26,29 @@ def painel_bilheteria(filme, sala, sessao):
         match opcao:
 
             case "1":
-                print("\n=== INFORMAÇÕES DO FILME ===")
-                print(filme.exibir_info())
+                print(programacao.exibir_programacao())
 
             case "2":
-                print("\n=== INFORMAÇÕES DA SALA ===")
-                print(sala.exibir_info())
+                try:
+                    sessao = escolher_sessao(programacao)
+
+                    print("\n=== INFORMAÇÕES DA SESSÃO ===")
+                    print(sessao.exibir_info())
+
+                except Exception as erro:
+                    print(f"Erro: {erro}")
 
             case "3":
-                print("\n=== INFORMAÇÕES DA SESSÃO ===")
-                print(sessao.exibir_info())
-
-            case "4":
                 print("\n=== COMPRA DE INGRESSOS ===")
 
                 try:
+                    sessao = escolher_sessao(programacao)
+
                     fileira = input("Fileira (A-E): ")
                     numero = int(input("Número do assento (1-10): "))
 
                     assento = Assento(fileira, numero)
-                    ingresso = Ingresso(filme, sessao, assento)
+                    ingresso = Ingresso(sessao, assento)
 
                     print("\nIngresso comprado com sucesso!")
                     ingresso.exibir_info()
@@ -45,16 +56,17 @@ def painel_bilheteria(filme, sala, sessao):
                 except Exception as erro:
                     print(f"Erro na compra: {erro}")
 
-            case "5":
+            case "4":
                 print("\n=== COMPRA DE MEIA-ENTRADA ===")
 
                 try:
+                    sessao = escolher_sessao(programacao)
+
                     fileira = input("Fileira (A-E): ")
                     numero = int(input("Número do assento (1-10): "))
 
                     assento = Assento(fileira, numero)
                     ingresso = IngressoMeia(
-                        filme,
                         sessao,
                         assento,
                         "Carteirinha de estudante"
@@ -132,10 +144,71 @@ def painel_snackbar(bar, pedido):
             print(f"Erro: {erro}")
 
 
-# FILME, SALA E SESSÃO
+def painel_programacao(programacao):
+    while True:
+
+        print("\n=== PROGRAMAÇÃO ===")
+        print("1 - Ver programação")
+        print("2 - Cadastrar sala")
+        print("3 - Cadastrar sessão")
+        print("0 - Voltar")
+
+        opcao = input("Escolha: ")
+
+        match opcao:
+
+            case "1":
+                print(programacao.exibir_programacao())
+
+            case "2":
+                try:
+                    numero = int(input("Número da sala: "))
+                    capacidade = int(input("Capacidade da sala: "))
+
+                    sala = Sala(numero, capacidade)
+                    print(programacao.cadastrar_sala(sala))
+
+                except Exception as erro:
+                    print(f"Erro: {erro}")
+
+            case "3":
+                try:
+                    titulo = input("Nome do filme: ")
+                    duracao = int(input("Duração do filme em minutos: "))
+                    genero = input("Gênero do filme: ")
+                    classificacao = int(input("Classificação indicativa: "))
+
+                    numero_sala = int(input("Número da sala: "))
+                    sala = programacao.buscar_sala(numero_sala)
+
+                    horario = input("Horário da sessão (HH:MM): ")
+                    preco = float(input("Preço do ingresso: "))
+
+                    filme = Filme(titulo, duracao, genero, classificacao)
+                    sessao = Sessao(filme, sala, horario, preco)
+
+                    print(programacao.cadastrar_sessao(sessao))
+
+                except Exception as erro:
+                    print(f"Erro: {erro}")
+
+            case "0":
+                print("Voltando ao painel principal...")
+                break
+
+            case _:
+                print("Opção inválida!")
+
+
+# FILME, SALA E SESSÃO INICIAIS
 filme1 = Filme("Interestelar", 169, "Ficção científica", 10)
 sala1 = Sala(1, 50)
 sessao1 = Sessao(filme1, sala1, "19:30", 30.00)
+
+# PROGRAMAÇÃO
+programacao = Programacao()
+programacao.cadastrar_sala(sala1)
+programacao.cadastrar_sessao(sessao1)
 
 # SNACK BAR
 bar = SnackBar()
@@ -153,6 +226,7 @@ while True:
     print("\n=== CINEMA - PAINEL DE ATENDIMENTO ===")
     print("1 - Bilheteria")
     print("2 - Snack Bar")
+    print("3 - Programação")
     print("0 - Encerrar")
 
     opcao = input("Escolha: ")
@@ -160,10 +234,13 @@ while True:
     match opcao:
 
         case "1":
-            painel_bilheteria(filme1, sala1, sessao1)
+            painel_bilheteria(programacao)
 
         case "2":
             painel_snackbar(bar, pedido)
+
+        case "3":
+            painel_programacao(programacao)
 
         case "0":
             print("Encerrando o sistema...")

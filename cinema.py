@@ -18,6 +18,13 @@ class Filme():
             f"Classificação indicativa: {self.__classificacao} anos"
         )
 
+    def get_titulo(self):
+        return self.__titulo
+
+    def get_duracao(self):
+        return self.__duracao
+
+
 class Assento():
     __fileira: str
     __numero: int
@@ -42,6 +49,9 @@ class Sala():
     __assentos: list[Assento]
 
     def __init__(self, numero: int, capacidade: int):
+        if capacidade <= 0:
+            raise ValueError("A capacidade deve ser maior que zero.")
+
         self.__numero = numero
         self.__capacidade = capacidade
         self.__assentos = []
@@ -60,6 +70,13 @@ class Sala():
             f"Quantidade de assentos cadastrados: {len(self.__assentos)}"
         )
 
+    def get_numero(self):
+        return self.__numero
+
+    def get_capacidade(self):
+        return self.__capacidade
+
+
 class Sessao():
     __filme: Filme
     __sala: Sala
@@ -68,6 +85,9 @@ class Sessao():
     __assentos_vendidos: list[Assento]
 
     def __init__(self, filme: Filme, sala: Sala, horario: str, preco: float):
+        if preco <= 0:
+            raise ValueError("O preço deve ser maior que zero.")
+
         self.__filme = filme
         self.__sala = sala
         self.__horario = horario
@@ -75,6 +95,9 @@ class Sessao():
         self.__assentos_vendidos = []
 
     def vender_assento(self, assento: Assento):
+        if len(self.__assentos_vendidos) >= self.__sala.get_capacidade():
+            raise Exception("A sessão está lotada.")
+
         for vendido in self.__assentos_vendidos:
             if (
                 vendido.identificarAssento()
@@ -100,27 +123,153 @@ class Sessao():
     def get_preco(self):
         return self.__preco
 
+    def get_sala(self):
+        return self.__sala
+
+    def get_filme(self):
+        return self.__filme
+
+    def get_duracao(self):
+        return self.__filme.get_duracao()
+
+
+class Programacao():
+    __salas: dict[int, Sala]
+    __sessoes: dict[int, list[Sessao]]
+    __limite_salas: int
+    __limite_sessoes: int
+
+    def __init__(self):
+        self.__salas = {}
+        self.__sessoes = {}
+        self.__limite_salas = 5
+        self.__limite_sessoes = 5
+
+    def cadastrar_sala(self, sala: Sala):
+        numero = sala.get_numero()
+
+        if len(self.__salas) >= self.__limite_salas:
+            raise ValueError("O cinema atingiu o limite de 5 salas.")
+
+        if numero in self.__salas:
+            raise ValueError("Essa sala já está cadastrada.")
+
+        self.__salas[numero] = sala
+        self.__sessoes[numero] = []
+
+        return "Sala cadastrada com sucesso!"
+
+    def buscar_sala(self, numero: int):
+        if numero not in self.__salas:
+            raise ValueError("Sala não encontrada.")
+
+        return self.__salas[numero]
+
+    def buscar_sessao(self, numero_sala: int, numero_sessao: int):
+        if numero_sala not in self.__sessoes:
+            raise ValueError("Sala não encontrada.")
+
+        if numero_sessao < 1 or numero_sessao > len(self.__sessoes[numero_sala]):
+            raise ValueError("Sessão não encontrada.")
+
+        return self.__sessoes[numero_sala][numero_sessao - 1]
+
+    def cadastrar_sessao(self, sessao: Sessao):
+        sala = sessao.get_sala()
+        numero = sala.get_numero()
+
+        if numero not in self.__salas:
+            raise ValueError("Cadastre a sala antes de cadastrar uma sessão.")
+
+        if self.__salas[numero] is not sala:
+            raise ValueError("A sessão não pertence à sala cadastrada.")
+
+        if len(self.__sessoes[numero]) >= self.__limite_sessoes:
+            raise ValueError("Essa sala já possui 5 sessões cadastradas.")
+
+        try:
+            partes = sessao.get_horario().split(":")
+            horas = int(partes[0])
+            minutos = int(partes[1])
+
+            if len(partes) != 2 or horas < 0 or horas > 23 or minutos < 0 or minutos > 59:
+                raise ValueError
+
+        except (ValueError, IndexError):
+            raise ValueError("Horário inválido! Utilize o formato HH:MM.")
+
+        inicio_novo = horas * 60 + minutos
+        duracao_nova = sessao.get_duracao()
+
+        if duracao_nova <= 0 or duracao_nova > 1440:
+            raise ValueError("A duração do filme deve ser maior que zero e até 24 horas.")
+
+        fim_novo = inicio_novo + duracao_nova
+
+        for sessao_existente in self.__sessoes[numero]:
+            partes_existente = sessao_existente.get_horario().split(":")
+            inicio_existente = int(partes_existente[0]) * 60 + int(partes_existente[1])
+            fim_existente = inicio_existente + sessao_existente.get_duracao()
+
+            # Verifica também sessões que passam da meia-noite.
+            for deslocamento in [-1440, 0, 1440]:
+                inicio_comparado = inicio_existente + deslocamento
+                fim_comparado = fim_existente + deslocamento
+
+                if inicio_novo < fim_comparado and inicio_comparado < fim_novo:
+                    raise ValueError(
+                        "Conflito de horário! Já existe uma sessão nesse período na mesma sala."
+                    )
+
+        self.__sessoes[numero].append(sessao)
+        return "Sessão cadastrada com sucesso!"
+
+    def exibir_programacao(self):
+        texto = "\n========== PROGRAMAÇÃO DO CINEMA =========="
+
+        if not self.__salas:
+            return texto + "\nNenhuma sala cadastrada."
+
+        for numero in self.__salas:
+            texto += f"\n\nSala {numero}"
+            texto += f"\nSessões cadastradas: {len(self.__sessoes[numero])}"
+
+            if not self.__sessoes[numero]:
+                texto += "\nNenhuma sessão cadastrada."
+                continue
+
+            for posicao, sessao in enumerate(self.__sessoes[numero], 1):
+                texto += (
+                    f"\n  Sessão {posicao} - "
+                    f"Filme: {sessao.get_filme().get_titulo()} | "
+                    f"Horário: {sessao.get_horario()} | "
+                    f"Duração: {sessao.get_duracao()} min"
+                )
+
+        return texto
+
+
 class Ingresso:
-    def __init__(self, filme: Filme, sessao: Sessao, assento: Assento, preco: float | None = None):
+    def __init__(self, sessao: Sessao, assento: Assento):
         sessao.vender_assento(assento)
 
-        self.filme = filme
         self.sessao = sessao
         self.assento = assento
-        self.preco = sessao.get_preco() if preco is None else preco
+        self.preco = sessao.get_preco()
 
     def calcular_preco(self):
         return self.preco
 
     def exibir_info(self):
-        print(self.filme.exibir_info())
+        print(self.sessao.get_filme().exibir_info())
         print(f"Horário da Sessão: {self.sessao.get_horario()}")
         print(self.assento.identificarAssento())
         print(f"Valor: R$ {self.calcular_preco():.2f}")
 
+
 class IngressoMeia(Ingresso):
-    def __init__(self, filme: Filme, sessao: Sessao, assento: Assento, comprovante: str, preco: float | None = None):
-        super().__init__(filme, sessao, assento, preco)
+    def __init__(self, sessao: Sessao, assento: Assento, comprovante: str):
+        super().__init__(sessao, assento)
         self.comprovante = comprovante
 
     def calcular_preco(self):
@@ -129,6 +278,7 @@ class IngressoMeia(Ingresso):
     def exibir_info(self):
         super().exibir_info()
         print(f"Tipo: Meia-Entrada (Comprovante: {self.comprovante})\n")
+
 
 class Produto:
     def __init__(self, id: int, nome: str, preco: float, estoque: int):
