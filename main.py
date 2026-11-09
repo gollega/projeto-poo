@@ -15,10 +15,9 @@ def painel_bilheteria(programacao):
     while True:
 
         print("\n=== BILHETERIA ===")
-        print("1 - Ver programação")
-        print("2 - Ver informações da sessão")
-        print("3 - Comprar ingresso")
-        print("4 - Comprar meia-entrada")
+        print("1 - Ver informações da sessão")
+        print("2 - Comprar ingresso")
+        print("3 - Comprar meia-entrada")
         print("0 - Voltar")
 
         opcao = input("Escolha: ")
@@ -26,9 +25,6 @@ def painel_bilheteria(programacao):
         match opcao:
 
             case "1":
-                print(programacao.exibir_programacao())
-
-            case "2":
                 try:
                     sessao = escolher_sessao(programacao)
 
@@ -38,7 +34,7 @@ def painel_bilheteria(programacao):
                 except Exception as erro:
                     print(f"Erro: {erro}")
 
-            case "3":
+            case "2":
                 print("\n=== COMPRA DE INGRESSOS ===")
 
                 try:
@@ -56,7 +52,7 @@ def painel_bilheteria(programacao):
                 except Exception as erro:
                     print(f"Erro na compra: {erro}")
 
-            case "4":
+            case "3":
                 print("\n=== COMPRA DE MEIA-ENTRADA ===")
 
                 try:
@@ -205,10 +201,16 @@ filme1 = Filme("Interestelar", 169, "Ficção científica", 10)
 sala1 = Sala(1, 50)
 sessao1 = Sessao(filme1, sala1, "19:30", 30.00)
 
+filme2 = Filme("Barbie", 114, "Comédia", 12)
+sala2 = Sala(2, 50)
+sessao2 = Sessao(filme2, sala2, "21:30", 30.00)
+
 # PROGRAMAÇÃO
 programacao = Programacao()
 programacao.cadastrar_sala(sala1)
 programacao.cadastrar_sessao(sessao1)
+programacao.cadastrar_sala(sala2)
+programacao.cadastrar_sessao(sessao2)
 
 # SNACK BAR
 bar = SnackBar()

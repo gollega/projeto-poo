@@ -66,8 +66,7 @@ class Sala():
     def exibir_info(self):
         return (
             f"Número da sala: {self.__numero}\n"
-            f"Capacidade: {self.__capacidade} pessoas\n"
-            f"Quantidade de assentos cadastrados: {len(self.__assentos)}"
+            f"Capacidade: {self.__capacidade} pessoas"
         )
 
     def get_numero(self):
@@ -226,13 +225,14 @@ class Programacao():
 
     def exibir_programacao(self):
         texto = "\n========== PROGRAMAÇÃO DO CINEMA =========="
-
+        
+        
         if not self.__salas:
             return texto + "\nNenhuma sala cadastrada."
 
         for numero in self.__salas:
             texto += f"\n\nSala {numero}"
-            texto += f"\nSessões cadastradas: {len(self.__sessoes[numero])}"
+            
 
             if not self.__sessoes[numero]:
                 texto += "\nNenhuma sessão cadastrada."
@@ -243,9 +243,9 @@ class Programacao():
                     f"\n  Sessão {posicao} - "
                     f"Filme: {sessao.get_filme().get_titulo()} | "
                     f"Horário: {sessao.get_horario()} | "
-                    f"Duração: {sessao.get_duracao()} min"
+                    f"Duração: {sessao.get_duracao()} min\n"
                 )
-
+        texto += f"\nSessões cadastradas: {len(self.__sessoes)}"
         return texto
 
 
