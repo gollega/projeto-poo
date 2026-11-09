@@ -1,8 +1,8 @@
-
 from cinema import *
 
 
 def escolher_sessao(programacao):
+
     print(programacao.exibir_programacao())
 
     numero_sala = int(input("\nNúmero da sala: "))
@@ -12,6 +12,7 @@ def escolher_sessao(programacao):
 
 
 def painel_bilheteria(programacao):
+
     while True:
 
         print("\n=== BILHETERIA ===")
@@ -62,6 +63,7 @@ def painel_bilheteria(programacao):
                     numero = int(input("Número do assento (1-10): "))
 
                     assento = Assento(fileira, numero)
+
                     ingresso = IngressoMeia(
                         sessao,
                         assento,
@@ -83,6 +85,7 @@ def painel_bilheteria(programacao):
 
 
 def painel_snackbar(bar, pedido):
+
     while True:
 
         print("\n=== SNACK BAR ===")
@@ -140,13 +143,53 @@ def painel_snackbar(bar, pedido):
             print(f"Erro: {erro}")
 
 
+def cadastrar_filme(programacao):
+
+    print("\n=== CADASTRAR FILME ===")
+
+    try:
+        titulo = input("Nome do filme: ")
+        duracao = int(input("Duração em minutos: "))
+        genero = input("Gênero: ")
+        classificacao = int(input("Classificação indicativa: "))
+
+        filme = Filme(titulo, duracao, genero, classificacao)
+
+        print(programacao.cadastrar_filme(filme))
+
+    except Exception as erro:
+        print(f"Erro ao cadastrar filme: {erro}")
+
+
+def escolher_filme(programacao):
+
+    filmes = programacao.listar_filmes()
+
+    if not filmes:
+        raise ValueError("Nenhum filme cadastrado. Cadastre um filme primeiro.")
+
+    print("\n=== FILMES CADASTRADOS ===")
+
+    for numero, filme in enumerate(filmes, 1):
+        print(f"{numero} - {filme.get_titulo()}")
+
+    escolha = int(input("\nEscolha o número do filme: "))
+
+    if escolha < 1 or escolha > len(filmes):
+        raise ValueError("Opção de filme inválida.")
+
+    return filmes[escolha - 1]
+
+
 def painel_programacao(programacao):
+
     while True:
 
         print("\n=== PROGRAMAÇÃO ===")
         print("1 - Ver programação")
         print("2 - Cadastrar sala")
         print("3 - Cadastrar sessão")
+        print("4 - Cadastrar filme")
         print("0 - Voltar")
 
         opcao = input("Escolha: ")
@@ -162,6 +205,7 @@ def painel_programacao(programacao):
                     capacidade = int(input("Capacidade da sala: "))
 
                     sala = Sala(numero, capacidade)
+
                     print(programacao.cadastrar_sala(sala))
 
                 except Exception as erro:
@@ -169,24 +213,25 @@ def painel_programacao(programacao):
 
             case "3":
                 try:
-                    titulo = input("Nome do filme: ")
-                    duracao = int(input("Duração do filme em minutos: "))
-                    genero = input("Gênero do filme: ")
-                    classificacao = int(input("Classificação indicativa: "))
+                    print("\n=== CADASTRAR SESSÃO ===")
 
-                    numero_sala = int(input("Número da sala: "))
+                    filme = escolher_filme(programacao)
+
+                    numero_sala = int(input("\nNúmero da sala: "))
                     sala = programacao.buscar_sala(numero_sala)
 
                     horario = input("Horário da sessão (HH:MM): ")
                     preco = float(input("Preço do ingresso: "))
 
-                    filme = Filme(titulo, duracao, genero, classificacao)
                     sessao = Sessao(filme, sala, horario, preco)
 
                     print(programacao.cadastrar_sessao(sessao))
 
                 except Exception as erro:
                     print(f"Erro: {erro}")
+
+            case "4":
+                cadastrar_filme(programacao)
 
             case "0":
                 print("Voltando ao painel principal...")
@@ -196,23 +241,26 @@ def painel_programacao(programacao):
                 print("Opção inválida!")
 
 
-# FILME, SALA E SESSÃO INICIAIS
 filme1 = Filme("Interestelar", 169, "Ficção científica", 10)
-sala1 = Sala(1, 50)
-sessao1 = Sessao(filme1, sala1, "19:30", 30.00)
-
 filme2 = Filme("Barbie", 114, "Comédia", 12)
+
+programacao = Programacao()
+
+programacao.cadastrar_filme(filme1)
+programacao.cadastrar_filme(filme2)
+
+sala1 = Sala(1, 50)
 sala2 = Sala(2, 50)
+
+programacao.cadastrar_sala(sala1)
+programacao.cadastrar_sala(sala2)
+
+sessao1 = Sessao(filme1, sala1, "19:30", 30.00)
 sessao2 = Sessao(filme2, sala2, "21:30", 30.00)
 
-# PROGRAMAÇÃO
-programacao = Programacao()
-programacao.cadastrar_sala(sala1)
 programacao.cadastrar_sessao(sessao1)
-programacao.cadastrar_sala(sala2)
 programacao.cadastrar_sessao(sessao2)
 
-# SNACK BAR
 bar = SnackBar()
 
 bar.adicionar_produto(Produto(1, "X-Burguer", 15.0, 10))
@@ -222,7 +270,6 @@ bar.adicionar_produto(Produto(4, "Pipoca", 8.0, 25))
 
 pedido = Pedido(bar)
 
-# PAINEL PRINCIPAL
 while True:
 
     print("\n=== CINEMA - PAINEL DE ATENDIMENTO ===")
