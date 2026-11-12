@@ -1,299 +1,193 @@
+import tkinter as tk
+import json
+import os
+
 from cinema import *
+from interface import CinemaApp
 
 
-def escolher_sessao(programacao):
-
-    print(programacao.exibir_programacao())
-
-    numero_sala = int(input("\nNúmero da sala: "))
-    numero_sessao = int(input("Número da sessão: "))
-
-    return programacao.buscar_sessao(numero_sala, numero_sessao)
+ARQUIVO_DADOS = "dados_cinema.json"
 
 
-def painel_bilheteria(programacao):
+def criar_dados_iniciais():
+    programacao = Programacao()
 
-    while True:
+    filme1 = Filme("Interestelar", 169, "Ficção científica", 10)
+    filme2 = Filme("Barbie", 114, "Comédia", 12)
 
-        print("\n=== BILHETERIA ===")
-        print("1 - Ver informações da sessão")
-        print("2 - Comprar ingresso")
-        print("3 - Comprar meia-entrada")
-        print("0 - Voltar")
+    programacao.cadastrar_filme(filme1)
+    programacao.cadastrar_filme(filme2)
 
-        opcao = input("Escolha: ")
+    sala1 = Sala(1, 50)
+    sala2 = Sala(2, 50)
 
-        match opcao:
+    programacao.cadastrar_sala(sala1)
+    programacao.cadastrar_sala(sala2)
 
-            case "1":
-                try:
-                    sessao = escolher_sessao(programacao)
+    programacao.cadastrar_sessao(
+        Sessao(filme1, sala1, "19:30", 30.00)
+    )
 
-                    print("\n=== INFORMAÇÕES DA SESSÃO ===")
-                    print(sessao.exibir_info())
+    programacao.cadastrar_sessao(
+        Sessao(filme2, sala2, "21:30", 30.00)
+    )
 
-                except Exception as erro:
-                    print(f"Erro: {erro}")
+    bar = SnackBar()
 
-            case "2":
-                print("\n=== COMPRA DE INGRESSOS ===")
+    bar.adicionar_produto(Produto(1, "X-Burguer", 15.0, 10))
+    bar.adicionar_produto(Produto(2, "Refrigerante", 6.5, 20))
+    bar.adicionar_produto(Produto(3, "Batata Frita", 12.0, 15))
+    bar.adicionar_produto(Produto(4, "Pipoca", 8.0, 25))
 
-                try:
-                    sessao = escolher_sessao(programacao)
+    pedido = Pedido(bar)
 
-                    fileira = input("Fileira (A-E): ")
-                    numero = int(input("Número do assento (1-10): "))
-
-                    assento = Assento(fileira, numero)
-                    ingresso = Ingresso(sessao, assento)
-
-                    print("\nIngresso comprado com sucesso!")
-                    ingresso.exibir_info()
-
-                except Exception as erro:
-                    print(f"Erro na compra: {erro}")
-
-            case "3":
-                print("\n=== COMPRA DE MEIA-ENTRADA ===")
-
-                try:
-                    sessao = escolher_sessao(programacao)
-
-                    fileira = input("Fileira (A-E): ")
-                    numero = int(input("Número do assento (1-10): "))
-
-                    assento = Assento(fileira, numero)
-
-                    ingresso = IngressoMeia(
-                        sessao,
-                        assento,
-                        "Carteirinha de estudante"
-                    )
-
-                    print("\nIngresso comprado com sucesso!")
-                    ingresso.exibir_info()
-
-                except Exception as erro:
-                    print(f"Erro na compra: {erro}")
-
-            case "0":
-                print("Voltando ao painel principal...")
-                break
-
-            case _:
-                print("Opção inválida!")
+    return programacao, bar, pedido
 
 
-def painel_snackbar(bar, pedido):
+def salvar_dados(programacao, bar, pedido):
+    dados = {
+        "filmes": [],
+        "salas": [],
+        "sessoes": [],
+        "produtos": [],
+        "pedido": []
+    }
 
-    while True:
+    for filme in programacao.listar_filmes():
+        dados["filmes"].append({
+            "titulo": filme.get_titulo(),
+            "duracao": filme.get_duracao(),
+            "genero": filme.get_genero(),
+            "classificacao": filme.get_classificacao()
+        })
 
-        print("\n=== SNACK BAR ===")
-        print("1 - Ver cardápio")
-        print("2 - Adicionar item ao pedido")
-        print("3 - Remover item do pedido")
-        print("4 - Ver pedido")
-        print("5 - Finalizar pedido")
-        print("0 - Sair")
+    for sala in programacao.listar_salas():
+        dados["salas"].append({
+            "numero": sala.get_numero(),
+            "capacidade": sala.get_capacidade()
+        })
 
-        opcao = input("Escolha: ")
+    for numero_sala, numero_sessao, sessao in programacao.listar_sessoes():
+        assentos = []
 
-        try:
+        for assento in sessao.listar_assentos_vendidos():
+            assentos.append({
+                "fileira": assento.get_fileira(),
+                "numero": assento.get_numero()
+            })
 
-            match opcao:
+        dados["sessoes"].append({
+            "sala": numero_sala,
+            "titulo_filme": sessao.get_filme().get_titulo(),
+            "horario": sessao.get_horario(),
+            "preco": sessao.get_preco(),
+            "assentos_vendidos": assentos
+        })
 
-                case "1":
-                    print(bar.exibir_cardapio())
+    for produto in bar.listar_produtos():
+        dados["produtos"].append({
+            "id": produto.id,
+            "nome": produto.nome,
+            "preco": produto.preco,
+            "estoque": produto.estoque
+        })
 
-                case "2":
-                    id = int(input("ID do produto: "))
-                    quantidade = int(input("Quantidade: "))
+    for produto, quantidade in pedido.listar_itens():
+        dados["pedido"].append({
+            "produto_id": produto.id,
+            "quantidade": quantidade
+        })
 
-                    pedido.adicionar_item(id, quantidade)
-
-                    print("Item adicionado com sucesso!")
-
-                case "3":
-                    id = int(input("ID do produto: "))
-                    quantidade = int(input("Quantidade para remover: "))
-
-                    pedido.remover_item(id, quantidade)
-
-                    print("Item(s) removido(s) com sucesso!")
-
-                case "4":
-                    print("\n=== SEU PEDIDO ===")
-                    print(pedido.exibir_pedido())
-
-                case "5":
-                    print("\n=== FINALIZANDO PEDIDO ===")
-                    print(pedido.finalizar_pedido())
-
-                case "0":
-                    print("Voltando ao painel principal...")
-                    break
-
-                case _:
-                    print("Opção inválida!")
-
-        except ValueError:
-            print("Digite uma quantidade válida.")
-
-        except Exception as erro:
-            print(f"Erro: {erro}")
+    with open(ARQUIVO_DADOS, "w", encoding="utf-8") as arquivo:
+        json.dump(dados, arquivo, ensure_ascii=False, indent=4)
 
 
-def cadastrar_filme(programacao):
-
-    print("\n=== CADASTRAR FILME ===")
+def carregar_dados():
+    if not os.path.exists(ARQUIVO_DADOS):
+        return criar_dados_iniciais()
 
     try:
-        titulo = input("Nome do filme: ")
-        duracao = int(input("Duração em minutos: "))
-        genero = input("Gênero: ")
-        classificacao = int(input("Classificação indicativa: "))
+        with open(ARQUIVO_DADOS, "r", encoding="utf-8") as arquivo:
+            dados = json.load(arquivo)
 
-        filme = Filme(titulo, duracao, genero, classificacao)
+        programacao = Programacao()
+        filmes = {}
 
-        print(programacao.cadastrar_filme(filme))
+        for item in dados["filmes"]:
+            filme = Filme(
+                item["titulo"],
+                item["duracao"],
+                item["genero"],
+                item["classificacao"]
+            )
 
-    except Exception as erro:
-        print(f"Erro ao cadastrar filme: {erro}")
+            programacao.cadastrar_filme(filme)
+            filmes[filme.get_titulo()] = filme
 
+        salas = {}
 
-def escolher_filme(programacao):
+        for item in dados["salas"]:
+            sala = Sala(item["numero"], item["capacidade"])
+            programacao.cadastrar_sala(sala)
+            salas[item["numero"]] = sala
 
-    filmes = programacao.listar_filmes()
+        for item in dados["sessoes"]:
+            sessao = Sessao(
+                filmes[item["titulo_filme"]],
+                salas[item["sala"]],
+                item["horario"],
+                item["preco"]
+            )
 
-    if not filmes:
-        raise ValueError("Nenhum filme cadastrado. Cadastre um filme primeiro.")
+            programacao.cadastrar_sessao(sessao)
 
-    print("\n=== FILMES CADASTRADOS ===")
+            for assento in item["assentos_vendidos"]:
+                sessao.vender_assento(
+                    Assento(
+                        assento["fileira"],
+                        assento["numero"]
+                    )
+                )
 
-    for numero, filme in enumerate(filmes, 1):
-        print(f"{numero} - {filme.get_titulo()}")
+        bar = SnackBar()
 
-    escolha = int(input("\nEscolha o número do filme: "))
+        for item in dados["produtos"]:
+            bar.adicionar_produto(
+                Produto(
+                    item["id"],
+                    item["nome"],
+                    item["preco"],
+                    item["estoque"]
+                )
+            )
 
-    if escolha < 1 or escolha > len(filmes):
-        raise ValueError("Opção de filme inválida.")
+        pedido = Pedido(bar)
 
-    return filmes[escolha - 1]
+        for item in dados["pedido"]:
+            produto = bar.buscar_produto(item["produto_id"])
+            pedido.restaurar_item(produto, item["quantidade"])
 
+        return programacao, bar, pedido
 
-def painel_programacao(programacao):
-
-    while True:
-
-        print("\n=== PROGRAMAÇÃO ===")
-        print("1 - Ver programação")
-        print("2 - Cadastrar sala")
-        print("3 - Cadastrar sessão")
-        print("4 - Cadastrar filme")
-        print("0 - Voltar")
-
-        opcao = input("Escolha: ")
-
-        match opcao:
-
-            case "1":
-                print(programacao.exibir_programacao())
-
-            case "2":
-                try:
-                    numero = int(input("Número da sala: "))
-                    capacidade = int(input("Capacidade da sala: "))
-
-                    sala = Sala(numero, capacidade)
-
-                    print(programacao.cadastrar_sala(sala))
-
-                except Exception as erro:
-                    print(f"Erro: {erro}")
-
-            case "3":
-                try:
-                    print("\n=== CADASTRAR SESSÃO ===")
-
-                    filme = escolher_filme(programacao)
-
-                    numero_sala = int(input("\nNúmero da sala: "))
-                    sala = programacao.buscar_sala(numero_sala)
-
-                    horario = input("Horário da sessão (HH:MM): ")
-                    preco = float(input("Preço do ingresso: "))
-
-                    sessao = Sessao(filme, sala, horario, preco)
-
-                    print(programacao.cadastrar_sessao(sessao))
-
-                except Exception as erro:
-                    print(f"Erro: {erro}")
-
-            case "4":
-                cadastrar_filme(programacao)
-
-            case "0":
-                print("Voltando ao painel principal...")
-                break
-
-            case _:
-                print("Opção inválida!")
+    except (KeyError, ValueError, TypeError, json.JSONDecodeError):
+        print(
+            "Não foi possível carregar os dados salvos. "
+            "Criando dados iniciais."
+        )
+        return criar_dados_iniciais()
 
 
-filme1 = Filme("Interestelar", 169, "Ficção científica", 10)
-filme2 = Filme("Barbie", 114, "Comédia", 12)
+if __name__ == "__main__":
+    programacao, bar, pedido = carregar_dados()
 
-programacao = Programacao()
+    root = tk.Tk()
 
-programacao.cadastrar_filme(filme1)
-programacao.cadastrar_filme(filme2)
+    app = CinemaApp(
+        root,
+        programacao,
+        bar,
+        pedido,
+        salvar_dados
+    )
 
-sala1 = Sala(1, 50)
-sala2 = Sala(2, 50)
-
-programacao.cadastrar_sala(sala1)
-programacao.cadastrar_sala(sala2)
-
-sessao1 = Sessao(filme1, sala1, "19:30", 30.00)
-sessao2 = Sessao(filme2, sala2, "21:30", 30.00)
-
-programacao.cadastrar_sessao(sessao1)
-programacao.cadastrar_sessao(sessao2)
-
-bar = SnackBar()
-
-bar.adicionar_produto(Produto(1, "X-Burguer", 15.0, 10))
-bar.adicionar_produto(Produto(2, "Refrigerante", 6.5, 20))
-bar.adicionar_produto(Produto(3, "Batata Frita", 12.0, 15))
-bar.adicionar_produto(Produto(4, "Pipoca", 8.0, 25))
-
-pedido = Pedido(bar)
-
-while True:
-
-    print("\n=== CINEMA - PAINEL DE ATENDIMENTO ===")
-    print("1 - Bilheteria")
-    print("2 - Snack Bar")
-    print("3 - Programação")
-    print("0 - Encerrar")
-
-    opcao = input("Escolha: ")
-
-    match opcao:
-
-        case "1":
-            painel_bilheteria(programacao)
-
-        case "2":
-            painel_snackbar(bar, pedido)
-
-        case "3":
-            painel_programacao(programacao)
-
-        case "0":
-            print("Encerrando o sistema...")
-            break
-
-        case _:
-            print("Opção inválida!")
+    root.mainloop()

@@ -1,0 +1,102 @@
+{
+    "filmes": [
+        {
+            "titulo": "Interestelar",
+            "duracao": 169,
+            "genero": "Ficção científica",
+            "classificacao": 10
+        },
+        {
+            "titulo": "Barbie",
+            "duracao": 114,
+            "genero": "Comédia",
+            "classificacao": 12
+        },
+        {
+            "titulo": "Midsommar",
+            "duracao": 169,
+            "genero": "Terror",
+            "classificacao": 18
+        }
+    ],
+    "salas": [
+        {
+            "numero": 1,
+            "capacidade": 50
+        },
+        {
+            "numero": 2,
+            "capacidade": 50
+        },
+        {
+            "numero": 3,
+            "capacidade": 50
+        }
+    ],
+    "sessoes": [
+        {
+            "sala": 1,
+            "titulo_filme": "Interestelar",
+            "horario": "19:30",
+            "preco": 30.0,
+            "assentos_vendidos": []
+        },
+        {
+            "sala": 2,
+            "titulo_filme": "Midsommar",
+            "horario": "15:40",
+            "preco": 30.0,
+            "assentos_vendidos": []
+        },
+        {
+            "sala": 2,
+            "titulo_filme": "Barbie",
+            "horario": "21:30",
+            "preco": 30.0,
+            "assentos_vendidos": [
+                {
+                    "fileira": "D",
+                    "numero": 10
+                },
+                {
+                    "fileira": "E",
+                    "numero": 7
+                }
+            ]
+        },
+        {
+            "sala": 3,
+            "titulo_filme": "Interestelar",
+            "horario": "14:45",
+            "preco": 30.0,
+            "assentos_vendidos": []
+        }
+    ],
+    "produtos": [
+        {
+            "id": 1,
+            "nome": "X-Burguer",
+            "preco": 15.0,
+            "estoque": 10
+        },
+        {
+            "id": 2,
+            "nome": "Refrigerante",
+            "preco": 6.5,
+            "estoque": 19
+        },
+        {
+            "id": 3,
+            "nome": "Batata Frita",
+            "preco": 12.0,
+            "estoque": 15
+        },
+        {
+            "id": 4,
+            "nome": "Pipoca",
+            "preco": 8.0,
+            "estoque": 24
+        }
+    ],
+    "pedido": []
+}
