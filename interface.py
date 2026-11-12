@@ -32,8 +32,12 @@ class CinemaApp:
         self.botoes_assentos = {}
 
         self.root.title("CINEPOO - Sistema de Cinema")
-        self.root.geometry("1100x700")
-        self.root.minsize(900, 600)
+
+        largura = min(1100, self.root.winfo_screenwidth() - 80)
+        altura = min(700, self.root.winfo_screenheight() - 100)
+
+        self.root.geometry(f"{largura}x{altura}")
+        self.root.minsize(760, 500)
         self.root.configure(bg=self.cor_fundo)
 
         self.criar_layout()
@@ -46,16 +50,12 @@ class CinemaApp:
             self.pedido
         )
 
-    # ==========================================
-    # ESTRUTURA PRINCIPAL
-    # ==========================================
-
     def criar_layout(self):
 
         self.sidebar = tk.Frame(
             self.root,
             bg=self.cor_vinho,
-            width=230
+            width=210
         )
 
         self.sidebar.pack(side="left", fill="y")
@@ -82,16 +82,143 @@ class CinemaApp:
         self.criar_botao_menu("Bilheteria", self.mostrar_bilheteria)
         self.criar_botao_menu("Snack Bar", self.mostrar_snackbar)
 
-        self.area_principal = tk.Frame(
+        self.container_principal = tk.Frame(
             self.root,
             bg=self.cor_fundo
         )
 
-        self.area_principal.pack(
+        self.container_principal.pack(
             side="right",
             fill="both",
             expand=True
         )
+
+        self.canvas = tk.Canvas(
+            self.container_principal,
+            bg=self.cor_fundo,
+            highlightthickness=0
+        )
+
+        self.canvas.pack(
+            side="left",
+            fill="both",
+            expand=True
+        )
+
+        self.barra_rolagem = ttk.Scrollbar(
+            self.container_principal,
+            orient="vertical",
+            command=self.canvas.yview
+        )
+
+        self.barra_rolagem.pack(
+            side="right",
+            fill="y"
+        )
+
+        self.canvas.configure(
+            yscrollcommand=self.barra_rolagem.set
+        )
+
+        self.area_principal = tk.Frame(
+            self.canvas,
+            bg=self.cor_fundo
+        )
+
+        self.id_area = self.canvas.create_window(
+            (0, 0),
+            window=self.area_principal,
+            anchor="nw"
+        )
+
+        self.area_principal.bind(
+            "<Configure>",
+            self.atualizar_area_rolagem
+        )
+
+        self.canvas.bind(
+            "<Configure>",
+            self.redimensionar_area
+        )
+
+        self.root.bind_all("<MouseWheel>", self.rolar_mouse)
+        self.root.bind_all("<Button-4>", self.rolar_linux)
+        self.root.bind_all("<Button-5>", self.rolar_linux)
+
+    def atualizar_area_rolagem(self, event=None):
+
+        self.canvas.configure(
+            scrollregion=self.canvas.bbox("all")
+        )
+
+    def redimensionar_area(self, event):
+
+        self.canvas.itemconfigure(
+            self.id_area,
+            width=event.width
+        )
+
+    def rolar_mouse(self, event):
+
+        widget = self.root.winfo_containing(
+            event.x_root,
+            event.y_root
+        )
+
+        if widget is None:
+            return
+
+        if isinstance(widget, (tk.Text, tk.Listbox)):
+            return
+
+        x = self.canvas.winfo_rootx()
+        y = self.canvas.winfo_rooty()
+
+        largura = self.canvas.winfo_width()
+        altura = self.canvas.winfo_height()
+
+        if not (x <= event.x_root <= x + largura):
+            return
+
+        if not (y <= event.y_root <= y + altura):
+            return
+
+        if abs(event.delta) >= 120:
+            unidades = -int(event.delta / 120)
+        else:
+            unidades = -1 if event.delta > 0 else 1
+
+        self.canvas.yview_scroll(unidades, "units")
+
+    def rolar_linux(self, event):
+
+        widget = self.root.winfo_containing(
+            event.x_root,
+            event.y_root
+        )
+
+        if widget is None:
+            return
+
+        if isinstance(widget, (tk.Text, tk.Listbox)):
+            return
+
+        x = self.canvas.winfo_rootx()
+        y = self.canvas.winfo_rooty()
+
+        largura = self.canvas.winfo_width()
+        altura = self.canvas.winfo_height()
+
+        if not (
+            x <= event.x_root <= x + largura
+            and y <= event.y_root <= y + altura
+        ):
+            return
+
+        if event.num == 4:
+            self.canvas.yview_scroll(-1, "units")
+        elif event.num == 5:
+            self.canvas.yview_scroll(1, "units")
 
     def criar_botao_menu(self, texto, comando):
 
@@ -137,6 +264,8 @@ class CinemaApp:
 
         for widget in self.area_principal.winfo_children():
             widget.destroy()
+
+        self.canvas.yview_moveto(0)
 
     def criar_titulo(self, titulo, descricao):
 
@@ -260,9 +389,20 @@ class CinemaApp:
 
         janela = tk.Toplevel(self.root)
         janela.title(titulo)
+
+        altura = min(
+            altura,
+            self.root.winfo_screenheight() - 100
+        )
+
+        largura = min(
+            largura,
+            self.root.winfo_screenwidth() - 80
+        )
+
         janela.geometry(f"{largura}x{altura}")
         janela.configure(bg=self.cor_branco)
-        janela.resizable(False, False)
+        janela.resizable(True, True)
         janela.transient(self.root)
         janela.grab_set()
 
@@ -284,10 +424,6 @@ class CinemaApp:
         ).pack(anchor="w", pady=(0, 12))
 
         return container, janela
-
-    # ==========================================
-    # INÍCIO
-    # ==========================================
 
     def mostrar_inicio(self):
 
@@ -339,10 +475,6 @@ class CinemaApp:
             ).pack(anchor="w", pady=5)
 
             self.criar_botao(card, "Acessar", comando)
-
-    # ==========================================
-    # PROGRAMAÇÃO
-    # ==========================================
 
     def obter_salas(self):
         return self.programacao.listar_salas()
@@ -551,10 +683,6 @@ class CinemaApp:
                 messagebox.showerror("Erro", str(erro))
 
         self.criar_botao(janela, "Salvar sessão", salvar)
-
-    # ==========================================
-    # BILHETERIA
-    # ==========================================
 
     def mostrar_bilheteria(self):
 
@@ -904,10 +1032,6 @@ class CinemaApp:
 
         except Exception as erro:
             messagebox.showerror("Erro na compra", str(erro))
-
-    # ==========================================
-    # SNACK BAR
-    # ==========================================
 
     def obter_produtos(self):
         return self.bar.listar_produtos()
