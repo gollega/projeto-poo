@@ -37,9 +37,16 @@ def criar_dados_iniciais():
     bar.adicionar_produto(Produto(1, "X-Burguer", 15.0, 10))
     bar.adicionar_produto(Produto(2, "Refrigerante", 6.5, 20))
     bar.adicionar_produto(Produto(3, "Batata Frita", 12.0, 15))
-    bar.adicionar_produto(Produto(4, "Pipoca", 8.0, 25))
+    bar.adicionar_produto(Produto(4, "Pipoca", 10.0, 40))
+    bar.adicionar_produto(Produto(5, "Chocolate", 8.0, 15))
+    bar.adicionar_produto(Produto(6, "Suco", 6.5, 50))
+    bar.adicionar_produto(Produto(7, "Salgadinho", 12.0, 15))
+    bar.adicionar_produto(Produto(8, "Bala Fini", 6.0, 30))
+    bar.adicionar_produto(Produto(9, "Água", 5.0, 50))
+    bar.adicionar_produto(Produto(10, "Pipoca Doce", 12.0, 20))
 
     pedido = Pedido(bar)
+    salvar_dados(programacao, bar, pedido)
 
     return programacao, bar, pedido
 
@@ -175,7 +182,6 @@ def carregar_dados():
             "Criando dados iniciais."
         )
         return criar_dados_iniciais()
-
 
 if __name__ == "__main__":
     programacao, bar, pedido = carregar_dados()

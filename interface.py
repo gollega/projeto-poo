@@ -81,6 +81,7 @@ class CinemaApp:
         self.criar_botao_menu("Programação", self.mostrar_programacao)
         self.criar_botao_menu("Bilheteria", self.mostrar_bilheteria)
         self.criar_botao_menu("Snack Bar", self.mostrar_snackbar)
+        self.criar_botao_menu("Sair", self.root.destroy)
 
         self.container_principal = tk.Frame(
             self.root,
